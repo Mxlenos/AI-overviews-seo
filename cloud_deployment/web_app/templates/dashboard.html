@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Overview Optimization{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i> AI Overview Optimization Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <i class="bi bi-files display-6 mb-2"></i>
+                <h5 class="card-title">Son Çıkarımlar</h5>
+                <h3 class="mb-0">{{ status.recent_extractions|length }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <i class="bi bi-layers display-6 mb-2"></i>
+                <h5 class="card-title">Batch'ler</h5>
+                <h3 class="mb-0">{{ status.recent_batches }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up display-6 mb-2"></i>
+                <h5 class="card-title">Analizler</h5>
+                <h3 class="mb-0">{{ status.recent_results|length }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle display-6 mb-2"></i>
+                <h5 class="card-title">Durum</h5>
+                <h3 class="mb-0">
+                    {% if status.status == 'active' %}
+                        <span class="badge bg-success">Aktif</span>
+                    {% else %}
+                        <span class="badge bg-warning">{{ status.status }}</span>
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Hızlı İşlemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="/extract" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-download"></i> Yeni Analiz Başlat
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="/results" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="bi bi-eye"></i> Sonuçları Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Extractions -->
+{% if status.recent_extractions %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Son Veri Çıkarımları</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Dosya</th>
+                                <th>Oluşturulma</th>
+                                <th>Boyut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for extraction in status.recent_extractions[:5] %}
+                            <tr>
+                                <td>{{ extraction.file }}</td>
+                                <td>{{ extraction.created[:19] | replace('T', ' ') }}</td>
+                                <td>{{ (extraction.size / 1024) | round(1) }} KB</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Results -->
+{% if recent_results %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Son Analiz Sonuçları</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Dosya</th>
+                                <th>AI Overview Skoru</th>
+                                <th>İçerik Kalitesi</th>
+                                <th>Toplam Doküman</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in recent_results %}
+                            <tr>
+                                <td>{{ result.file }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ result.ai_overview_score }}%</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ result.content_quality_score }}%</span>
+                                </td>
+                                <td>{{ result.total_documents }}</td>
+                                <td>{{ result.created[:19] | replace('T', ' ') }}</td>
+                                <td>
+                                    <a href="/result/{{ result.blob_name }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Detay
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- System Information -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Sistem Bilgileri</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <strong>Son Güncelleme:</strong> {{ status.last_updated[:19] | replace('T', ' ') }}<br>
+                    <strong>Durum:</strong> {{ status.status }}<br>
+                    <strong>Platform:</strong> Google Cloud Platform
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-question-circle"></i> Yardım</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <p>Kullanım için:</p>
+                    <ul class="mb-0">
+                        <li>Veri çıkarma sayfasından başlayın</li>
+                        <li>Web sitesi URL'si girin</li>
+                        <li>Analiz tamamlandığında sonuçları inceleyin</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh dashboard every 30 seconds
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %} 

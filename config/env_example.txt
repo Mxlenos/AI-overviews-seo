@@ -1,0 +1,29 @@
+# Google Cloud Proje Ayarları
+GCP_PROJECT_ID=your-google-cloud-project-id
+GCP_REGION=us-central1
+GCP_ZONE=us-central1-a
+
+# Google Cloud Kimlik Doğrulama
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
+
+# Vertex AI Search
+SEARCH_ENGINE_ID=your-search-engine-id
+
+# Cloud SQL Veritabanı
+DB_PASSWORD=your-database-password
+
+# API Anahtarları (Opsiyonel)
+OPENAI_API_KEY=your-openai-api-key-for-analysis
+
+# Loglama
+LOG_LEVEL=INFO
+
+# Web Scraping
+USER_AGENT=AI-Overview-Bot/1.0
+
+# Hedef Web Sitesi
+TARGET_WEBSITE_URL=https://yourwebsite.com
+
+# AI Overview Tracking
+ENABLE_AI_OVERVIEW_TRACKING=true
+COSINE_SIMILARITY_THRESHOLD=0.75 

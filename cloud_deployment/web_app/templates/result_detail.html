@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Analiz Detayı - AI Overview Optimization{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/results">Sonuçlar</a></li>
+                <li class="breadcrumb-item active">Detay</li>
+            </ol>
+        </nav>
+        
+        <h1 class="mb-4">
+            <i class="bi bi-file-text"></i> Analiz Detayları
+        </h1>
+    </div>
+</div>
+
+{% if result %}
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center metric-card">
+            <div class="card-body">
+                <h5 class="card-title">AI Overview Skoru</h5>
+                <h2>{{ result.analysis.ai_overview_score or 0 }}%</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">İçerik Kalitesi</h5>
+                <h2 class="text-info">{{ result.analysis.content_quality_score or 0 }}%</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Anahtar Kelime</h5>
+                <h2 class="text-warning">{{ result.analysis.keyword_relevance_score or 0 }}%</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">Toplam Doküman</h5>
+                <h2 class="text-success">{{ result.analysis.total_documents or 0 }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Details -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Detaylı Analiz</h5>
+            </div>
+            <div class="card-body">
+                {% if result.analysis.recommendations %}
+                <h6>📋 Öneriler:</h6>
+                <ul>
+                    {% for recommendation in result.analysis.recommendations %}
+                    <li>{{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if result.analysis.strengths %}
+                <h6 class="text-success mt-3">✅ Güçlü Yanlar:</h6>
+                <ul class="text-success">
+                    {% for strength in result.analysis.strengths %}
+                    <li>{{ strength }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if result.analysis.weaknesses %}
+                <h6 class="text-warning mt-3">⚠️ İyileştirme Alanları:</h6>
+                <ul class="text-warning">
+                    {% for weakness in result.analysis.weaknesses %}
+                    <li>{{ weakness }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Pages -->
+        {% if result.analysis.top_pages %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-star"></i> En İyi Performans Gösteren Sayfalar</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>URL</th>
+                                <th>Skor</th>
+                                <th>Kelime Sayısı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for page in result.analysis.top_pages[:10] %}
+                            <tr>
+                                <td><a href="{{ page.url }}" target="_blank" class="text-decoration-none">{{ page.url[:50] }}...</a></td>
+                                <td><span class="badge bg-primary">{{ page.score }}%</span></td>
+                                <td>{{ page.word_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Metadata -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Analiz Bilgileri</h6>
+            </div>
+            <div class="card-body">
+                <small>
+                    <strong>Analiz Tarihi:</strong><br>
+                    {{ result.metadata.created_at[:19] | replace('T', ' ') }}<br><br>
+                    
+                    <strong>İşlenen URL:</strong><br>
+                    <a href="{{ result.metadata.source_url }}" target="_blank">{{ result.metadata.source_url }}</a><br><br>
+                    
+                    <strong>Toplam Sayfa:</strong> {{ result.analysis.total_documents }}<br>
+                    <strong>İşlem Süresi:</strong> {{ result.metadata.processing_time_minutes or 'N/A' }} dakika<br>
+                    <strong>Dosya Boyutu:</strong> {{ (result.metadata.file_size_kb or 0) }} KB
+                </small>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-gear"></i> İşlemler</h6>
+            </div>
+            <div class="card-body d-grid gap-2">
+                <button class="btn btn-outline-primary" onclick="downloadResult()">
+                    <i class="bi bi-download"></i> JSON İndir
+                </button>
+                <button class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Yazdır
+                </button>
+                <a href="/extract" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Yeni Analiz
+                </a>
+            </div>
+        </div>
+
+        <!-- Keywords -->
+        {% if result.analysis.top_keywords %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-tags"></i> En Çok Kullanılan Kelimeler</h6>
+            </div>
+            <div class="card-body">
+                {% for keyword in result.analysis.top_keywords[:10] %}
+                <span class="badge bg-light text-dark me-1 mb-1">{{ keyword.word }} ({{ keyword.count }})</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function downloadResult() {
+    const data = JSON.parse('{{ result | tojson | safe }}');
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ai_overview_analysis.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h4>Analiz bulunamadı</h4>
+            <p>Belirtilen analiz sonucu bulunamadı veya silinmiş olabilir.</p>
+            <a href="/results" class="btn btn-primary">Sonuçlar sayfasına dön</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

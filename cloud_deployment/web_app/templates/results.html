@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Sonuçlar - AI Overview Optimization{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-graph-up"></i> Analiz Sonuçları
+        </h1>
+        <p class="lead text-muted">AI Overview optimizasyon analiz sonuçlarınız</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-task"></i> Tüm Analizler</h5>
+                <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Yenile
+                </button>
+            </div>
+            <div class="card-body">
+                {% if results %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="resultsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Dosya</th>
+                                <th>AI Overview Skoru</th>
+                                <th>İçerik Kalitesi</th>
+                                <th>Anahtar Kelime Uygunluğu</th>
+                                <th>Toplam Doküman</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>
+                                    <strong>{{ result.file }}</strong>
+                                </td>
+                                <td>
+                                    {% set score = result.ai_overview_score %}
+                                    {% if score >= 80 %}
+                                        <span class="badge bg-success">{{ score }}%</span>
+                                    {% elif score >= 60 %}
+                                        <span class="badge bg-warning">{{ score }}%</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ score }}%</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set quality = result.content_quality_score %}
+                                    {% if quality >= 80 %}
+                                        <span class="badge bg-success">{{ quality }}%</span>
+                                    {% elif quality >= 60 %}
+                                        <span class="badge bg-warning">{{ quality }}%</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ quality }}%</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set relevance = result.keyword_relevance_score %}
+                                    {% if relevance >= 80 %}
+                                        <span class="badge bg-success">{{ relevance }}%</span>
+                                    {% elif relevance >= 60 %}
+                                        <span class="badge bg-warning">{{ relevance }}%</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ relevance }}%</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ result.total_documents }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ result.created[:19] | replace('T', ' ') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/result/{{ result.blob_name }}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Detaylı görünüm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-secondary" 
+                                                onclick="downloadResult('{{ result.blob_name }}')"
+                                                title="İndir">
+                                            <i class="bi bi-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h4 class="mt-3 text-muted">Henüz analiz sonucu yok</h4>
+                    <p class="text-muted">İlk analizinizi başlatmak için veri çıkarma sayfasını kullanın.</p>
+                    <a href="/extract" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Yeni Analiz Başlat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<!-- Statistics Summary -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">Yüksek Skor</h5>
+                <h2 class="text-success">
+                    {{ results | selectattr('ai_overview_score', '>=', 80) | list | length }}
+                </h2>
+                <small class="text-muted">80% ve üzeri</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Orta Skor</h5>
+                <h2 class="text-warning">
+                    {{ results | selectattr('ai_overview_score', '>=', 60) | selectattr('ai_overview_score', '<', 80) | list | length }}
+                </h2>
+                <small class="text-muted">60-79% arası</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-danger">Düşük Skor</h5>
+                <h2 class="text-danger">
+                    {{ results | selectattr('ai_overview_score', '<', 60) | list | length }}
+                </h2>
+                <small class="text-muted">60% altı</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">Toplam</h5>
+                <h2 class="text-info">{{ results | length }}</h2>
+                <small class="text-muted">Tüm analizler</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Tips -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Optimizasyon İpuçları</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Yüksek Skor İçin:</h6>
+                        <ul class="small">
+                            <li>İçeriğinizi uzun ve detaylı yapın</li>
+                            <li>Soru-cevap formatı kullanın</li>
+                            <li>Anahtar kelimeleri doğal şekilde dağıtın</li>
+                            <li>Yapılandırılmış veriler ekleyin</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning">Kaçınılması Gerekenler:</h6>
+                        <ul class="small">
+                            <li>Çok kısa içerikler</li>
+                            <li>Anahtar kelime doldurma</li>
+                            <li>Tekrarlayan içerikler</li>
+                            <li>Düşük kaliteli metinler</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// DataTables initialization
+$(document).ready(function() {
+    if ($('#resultsTable').length) {
+        $('#resultsTable').DataTable({
+            order: [[5, 'desc']], // Sort by date descending
+            pageLength: 25,
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+            }
+        });
+    }
+});
+
+// Download function
+async function downloadResult(blobName) {
+    try {
+        const response = await fetch(`/api/result/${blobName}`);
+        if (response.ok) {
+            const data = await response.json();
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: 'application/json'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = blobName.split('/').pop();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } else {
+            alert('Dosya indirilemedi!');
+        }
+    } catch (error) {
+        alert('Hata: ' + error.message);
+    }
+}
+
+// Auto refresh every 60 seconds
+setInterval(function() {
+    // Only refresh if no modal is open
+    if (!document.querySelector('.modal.show')) {
+        location.reload();
+    }
+}, 60000);
+</script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+{% endblock %} 
