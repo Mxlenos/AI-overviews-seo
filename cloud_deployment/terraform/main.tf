@@ -354,7 +354,7 @@ resource "google_monitoring_alert_policy" "function_errors" {
     
     condition_threshold {
       filter          = "resource.type=\"cloud_function\""
-      comparison      = "COMPARISON_GREATER_THAN"
+      comparison      = "COMPARISON_GT"
       threshold_value = 5
       duration        = "300s"
       
