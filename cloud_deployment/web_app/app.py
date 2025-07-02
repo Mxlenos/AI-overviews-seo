@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, session
 from google.cloud import storage
 from google.cloud import pubsub_v1
-from google.cloud import sql
 from google.cloud import discoveryengine
 import requests
 from typing import Dict, List, Optional
