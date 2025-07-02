@@ -1,7 +1,7 @@
 Flask==2.3.3
 google-cloud-storage==2.14.0
 google-cloud-pubsub==2.21.1
-google-cloud-discoveryengine==0.11.16
+google-cloud-discoveryengine==0.13.9
 requests==2.31.0
 gunicorn==21.2.0
-Werkzeug==2.3.7 
+Werkzeug==2.3.7
